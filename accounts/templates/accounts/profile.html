@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - MarketPlace{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-circle text-primary" style="font-size: 4rem;"></i>
+                        <h2 class="mt-3 text-primary">User Profile</h2>
+                        <p class="text-muted">Welcome to your MarketPlace profile</p>
+                    </div>
+
+                    <!-- Profile Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user text-primary me-2"></i>Account Information
+                                    </h5>
+                                    <p class="card-text">
+                                        <strong>Username:</strong> {{ user.username }}<br>
+                                        <strong>Email:</strong> {{ user.email|default:"Not provided" }}<br>
+                                        <strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y" }}<br>
+                                        <strong>Last Login:</strong> {{ user.last_login|date:"M d, Y H:i" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-cog text-primary me-2"></i>Quick Actions
+                                    </h5>
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'products:product_create' %}" class="btn btn-outline-primary">
+                                            <i class="fas fa-plus me-2"></i>Add Product
+                                        </a>
+                                        <a href="{% url 'category:category_create' %}" class="btn btn-outline-success">
+                                            <i class="fas fa-tag me-2"></i>Add Category
+                                        </a>
+                                        <a href="{% url 'products:product_list' %}" class="btn btn-outline-info">
+                                            <i class="fas fa-list me-2"></i>View Products
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logout Button -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+# Database
+db.sqlite3
+
+# Media files (don’t track uploaded files)
+media/
+
+# Django migrations cache
+*/migrations/__pycache__/
+
+# IDE / Editor files
+.vscode/
+*.swp
+*.idea/
+*.DS_Store
+
+# Logs
+*.log
+
+# Static files collected by Django
+staticfiles/
+
+# Always include documentation
+!*.md
+

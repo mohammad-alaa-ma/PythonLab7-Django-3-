@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - MarketPlace{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'products:index' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'category:category_list' %}">Categories</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Category Header -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            {% if category.image %}
+            <img src="{{ category.image.url }}" class="img-fluid rounded shadow" alt="{{ category.name }}">
+            {% else %}
+            <div class="bg-light rounded shadow d-flex align-items-center justify-content-center" style="height: 300px;">
+                <i class="fas fa-image text-muted" style="font-size: 5rem;"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm category-header">
+                <div class="card-body py-3">
+                    <h1 class="card-title category-title mb-2">
+                        <i class="fas fa-tag me-2"></i>{{ category.name }}
+                    </h1>
+                    <p class="card-text category-description mb-3">{{ category.description }}</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-2 rounded-pill stats-badge products-badge">
+                                <i class="fas fa-boxes me-2"></i>
+                                <span class="fw-bold stats-text">{{ category.products.count }} Products</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-2 rounded-pill stats-badge date-badge">
+                                <i class="fas fa-calendar me-2"></i>
+                                <span class="fw-bold stats-text">Created {{ category.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <a href="{% url 'category:category_list' %}" class="btn btn-outline-primary action-btn">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Categories
+                        </a>
+                        <a href="{% url 'products:product_list' %}?category={{ category.pk }}" class="btn btn-outline-success action-btn">
+                            <i class="fas fa-list me-1"></i>View in Product List
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'category:category_update' category.pk %}" class="btn btn-warning action-btn">
+                            <i class="fas fa-edit me-1"></i>Edit Category
+                        </a>
+                        <a href="{% url 'category:category_delete' category.pk %}" class="btn btn-danger action-btn">
+                            <i class="fas fa-trash me-1"></i>Delete Category
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products in this Category -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h2 class="mb-0">
+                                <i class="fas fa-shopping-bag text-primary me-3"></i>
+                                Products in {{ category.name }}
+                            </h2>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="get" class="d-flex search-form">
+                                <input type="text" name="search" value="{{ request.GET.search }}" 
+                                       class="form-control" placeholder="Search products in this category..." 
+                                       aria-label="Search products">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if search_query %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-search me-2"></i>
+                Showing {{ filtered_products|length }} products matching "<strong>{{ search_query }}</strong>" in {{ category.name }}
+                <a href="{% url 'category:category_detail' category.pk %}" class="btn btn-sm btn-outline-info ms-3">
+                    <i class="fas fa-times me-1"></i>Clear Search
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for product in filtered_products %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm border-0 product-card">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text text-muted">{{ product.description|truncatewords:15 }}</p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="h5 text-primary mb-0">${{ product.price }}</span>
+                            <span class="badge {% if product.in_stock > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if product.in_stock > 0 %}{{ product.in_stock }} in stock{% else %}Out of stock{% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small class="text-muted">Code: {{ product.code }}</small>
+                            <div class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-eye me-2"></i>View Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                {% if search_query %}
+                    No products found matching "<strong>{{ search_query }}</strong>" in this category.
+                    <a href="{% url 'category:category_detail' category.pk %}" class="btn btn-sm btn-outline-info ms-3">
+                        <i class="fas fa-times me-1"></i>Clear Search
+                    </a>
+                {% else %}
+                    No products found in this category.
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'products:product_create' %}" class="alert-link">Add the first product!</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .search-form {
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .search-form .form-control {
+        border-radius: 25px 0 0 25px;
+        border-right: none;
+        border: 1px solid #dee2e6;
+        padding: 12px 20px;
+    }
+    
+    .search-form .form-control:focus {
+        box-shadow: none;
+        border-color: #667eea;
+    }
+    
+    .search-form .btn {
+        border-radius: 0 25px 25px 0;
+        border-left: none;
+        padding: 12px 20px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-color: transparent;
+    }
+    
+    .search-form .btn:hover {
+        background: linear-gradient(45deg, #5a6fd8, #6a4190);
+        transform: translateY(-1px);
+    }
+    
+    .category-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .category-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(8px);
+    }
+    
+    .category-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .category-header .card-body {
+        background: transparent;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .category-header .card-title {
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* Category title styling */
+    .category-title {
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Category description styling */
+    .category-description {
+        color: rgba(255, 255, 255, 0.95) !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        font-weight: 400;
+        line-height: 1.4;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .category-header .btn {
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        text-shadow: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 3;
+    }
+    
+    .category-header .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Specific button styles for better visibility */
+    .category-header .btn-outline-primary {
+        background: rgba(255, 255, 255, 0.9);
+        color: #667eea;
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .category-header .btn-outline-primary:hover {
+        background: white;
+        color: #667eea;
+        border-color: white;
+    }
+    
+    .category-header .btn-outline-success {
+        background: rgba(255, 255, 255, 0.9);
+        color: #28a745;
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .category-header .btn-outline-success:hover {
+        background: white;
+        color: #28a745;
+        border-color: white;
+    }
+    
+    .category-header .btn-warning {
+        background: #ffc107;
+        color: #212529;
+        border-color: #ffc107;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+    }
+    
+    .category-header .btn-warning:hover {
+        background: #e0a800;
+        border-color: #e0a800;
+        color: #212529;
+    }
+    
+    .category-header .btn-danger {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+    
+    .category-header .btn-danger:hover {
+        background: #c82333;
+        border-color: #c82333;
+        color: white;
+    }
+    
+    /* Stats badges styling */
+    .category-header .stats-badge {
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .category-header .stats-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+    
+    /* Products badge - Beautiful green gradient */
+    .category-header .products-badge {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-header .products-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .category-header .products-badge:hover::before {
+        left: 100%;
+    }
+    
+    .category-header .products-badge:hover {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        transform: translateY(-2px) scale(1.02);
+    }
+    
+    .category-header .products-badge i {
+        color: #ffffff;
+        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
+        font-size: 1.1rem !important;
+    }
+    
+    /* Date badge - Beautiful blue gradient */
+    .category-header .date-badge {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-header .date-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .category-header .date-badge:hover::before {
+        left: 100%;
+    }
+    
+    .category-header .date-badge:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+        transform: translateY(-2px) scale(1.02);
+    }
+    
+    .category-header .date-badge i {
+        color: #ffffff;
+        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
+        font-size: 1.1rem !important;
+    }
+    
+    /* Stats text styling */
+    .category-header .stats-text {
+        color: white !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        font-size: 0.9rem;
+    }
+    
+    /* Action button improvements */
+    .action-btn {
+        min-width: 160px;
+        margin-bottom: 8px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .action-btn {
+            min-width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .category-header .d-flex.flex-wrap {
+            flex-direction: column;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .category-header .card-body {
+            padding: 1rem;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+    }
+    
+    .product-card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}
+
+
+
+
+
